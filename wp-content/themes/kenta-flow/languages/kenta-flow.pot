@@ -1,0 +1,461 @@
+# Copyright (C) 2025 WP Moose
+# This file is distributed under the GNU General Public License v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Kenta Flow 1.0.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/theme/kenta-flow\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-12-23T07:15:16+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: kenta-flow\n"
+
+#. Theme Name of the theme
+#: style.css
+#: functions.php:51
+#: patterns.php:16
+msgid "Kenta Flow"
+msgstr ""
+
+#. Theme URI of the theme
+#: style.css
+msgid "https://kentatheme.com/child-themes/kenta-flow"
+msgstr ""
+
+#. Description of the theme
+#: style.css
+msgid "A Multi-purpose and Customizable Free WordPress Theme. You can also access the Kenta theme's rich Starter Sites (https://kentatheme.com/starter-sites/) to help you create your sites with just one click instead of starting from scratch. It provides endless possibilities to create your site visually in minutes, without coding skills. We also have tons of options for you to customize every part of your site. You can almost build any kind of websites, like blog, business, portfolio, WooCommerce storefronts etc. Whether you're bloggers, editors, online magazines, newspaper, news portals, content publishers, creative business, small businesses, startups and freelancers, we can help you build an amazing website."
+msgstr ""
+
+#. Author of the theme
+#: style.css
+msgid "WP Moose"
+msgstr ""
+
+#. Author URI of the theme
+#: style.css
+msgid "https://www.wpmoose.com"
+msgstr ""
+
+#: patterns.php:25
+msgid "Big Hero"
+msgstr ""
+
+#: patterns.php:34
+msgid "Media Text Section"
+msgstr ""
+
+#: patterns.php:43
+msgid "Call to Action 01"
+msgstr ""
+
+#: patterns.php:52
+msgid "Call to Action 02"
+msgstr ""
+
+#: patterns.php:61
+msgid "Feature Cards 01"
+msgstr ""
+
+#: patterns.php:70
+msgid "Feature Cards 02"
+msgstr ""
+
+#: patterns.php:79
+#: template-parts/patterns/latest-news.php:5
+msgid "Latest News"
+msgstr ""
+
+#: patterns.php:88
+msgid "Testimonials"
+msgstr ""
+
+#: starter-content.php:36
+msgid "Home"
+msgstr ""
+
+#: starter-content.php:43
+msgid "About"
+msgstr ""
+
+#: starter-content.php:50
+msgid "Contact"
+msgstr ""
+
+#: template-parts/patterns/cta-01.php:4
+msgid "Get free marketing consultation online"
+msgstr ""
+
+#: template-parts/patterns/cta-01.php:8
+msgid "Contact us and get free marketing consultation for your business."
+msgstr ""
+
+#: template-parts/patterns/cta-01.php:13
+#: template-parts/patterns/cta-02.php:14
+msgid "Let's Get Started"
+msgstr ""
+
+#: template-parts/patterns/cta-02.php:4
+msgid "Let's bring your vision to life"
+msgstr ""
+
+#: template-parts/patterns/cta-02.php:8
+msgctxt "Dummy text"
+msgid "Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium tellus duis convallis."
+msgstr ""
+
+#: template-parts/patterns/features-01.php:5
+msgid "We bring your vision to life"
+msgstr ""
+
+#: template-parts/patterns/features-01.php:9
+msgid "Create&nbsp;stunning&nbsp;layouts&nbsp;for&nbsp;your&nbsp;website"
+msgstr ""
+
+#: template-parts/patterns/features-01.php:14
+#: template-parts/patterns/features-02.php:14
+#: template-parts/patterns/features-02.php:80
+#: template-parts/patterns/media-text.php:21
+msgctxt "Dummy text"
+msgid "Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Iaculis massa nisl malesuada lacinia integer nunc posuere."
+msgstr ""
+
+#: template-parts/patterns/features-01.php:25
+msgid "Innovate"
+msgstr ""
+
+#: template-parts/patterns/features-01.php:29
+#: template-parts/patterns/features-01.php:43
+#: template-parts/patterns/features-01.php:57
+msgid "Pushing boundaries to redefine what’s possible. We embrace fresh ideas, cutting-edge technology."
+msgstr ""
+
+#: template-parts/patterns/features-01.php:39
+msgid "Integrate"
+msgstr ""
+
+#: template-parts/patterns/features-01.php:53
+msgid "Elevate"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:5
+msgid "What We Do"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:9
+msgid "Turning ideas into interactive magic"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:31
+msgid "Design &amp; Development"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:35
+#: template-parts/patterns/features-02.php:51
+#: template-parts/patterns/features-02.php:67
+msgctxt "Dummy text"
+msgid "Lorem ipsum dolor sit amet consectetur adipiscing elit."
+msgstr ""
+
+#: template-parts/patterns/features-02.php:47
+#: template-parts/patterns/features-02.php:134
+msgid "UI/UX Design"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:63
+#: template-parts/patterns/features-02.php:140
+msgid "Marketing &amp; Growth"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:76
+msgid "Websites&nbsp;Experts"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:84
+msgctxt "Dummy text"
+msgid "Ut hendrerit semper vel class aptent taciti sociosqu. Ad litora torquent per conubia nostra inceptos himenaeos."
+msgstr ""
+
+#: template-parts/patterns/features-02.php:90
+msgid "180+"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:94
+msgid "Projects Done"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:100
+msgid "90+"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:104
+msgid "Happy Clients"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:110
+msgid "30k"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:114
+msgid "Coffee Cups"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:122
+msgid "Web Design"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:123
+#: template-parts/patterns/features-02.php:129
+#: template-parts/patterns/features-02.php:135
+#: template-parts/patterns/features-02.php:141
+#: template-parts/patterns/features-02.php:147
+msgctxt "Dummy text"
+msgid "Tempus leo eu aenean sed diam urna tempor. Pulvinar vivamus fringilla lacus nec metus bibendum egestas."
+msgstr ""
+
+#: template-parts/patterns/features-02.php:128
+msgid "Responsive Design"
+msgstr ""
+
+#: template-parts/patterns/features-02.php:146
+msgid "Analytics &amp; Optimization"
+msgstr ""
+
+#: template-parts/patterns/hero.php:7
+msgid "Full-Stack Agency"
+msgstr ""
+
+#: template-parts/patterns/hero.php:12
+msgid "From concept to launch, we make it seamless"
+msgstr ""
+
+#: template-parts/patterns/hero.php:16
+msgid "—— Innovate. Integrate. Elevate. ——"
+msgstr ""
+
+#: template-parts/patterns/latest-news.php:11
+msgid "Read our blogs"
+msgstr ""
+
+#: template-parts/patterns/latest-news.php:31
+msgid "No Posts."
+msgstr ""
+
+#: template-parts/patterns/media-text.php:12
+msgid "Why Choose Us"
+msgstr ""
+
+#: template-parts/patterns/media-text.php:16
+msgid "We build things that don’t just work, but wow!"
+msgstr ""
+
+#: template-parts/patterns/media-text.php:32
+msgid "Creative Solutions"
+msgstr ""
+
+#: template-parts/patterns/media-text.php:36
+#: template-parts/patterns/media-text.php:52
+msgctxt "Dummy text"
+msgid "Tempus leo eu aenean sed diam urna tempor. "
+msgstr ""
+
+#: template-parts/patterns/media-text.php:48
+msgid "Digital Strategy"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:5
+msgid "Code dreams. Design realities"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:11
+msgid "About us"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:23
+#: template-parts/patterns/testimonials.php:41
+#: template-parts/patterns/testimonials.php:59
+msgctxt "Dummy text"
+msgid "Lorem ipsum dolor sit amet consectetur adipiscing elit"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:27
+#: template-parts/patterns/testimonials.php:45
+#: template-parts/patterns/testimonials.php:63
+msgid "Read More"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:72
+msgid "Trusted by top companies"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:109
+msgid "Absolutely impressed! Their team transformed our vague idea into a flawless digital product."
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:113
+msgid "Sophia Grace"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:125
+msgid "Top-tier designers and developers. They understand brand identity and deliver scalable solutions."
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:129
+msgid "Alexander James"
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:141
+msgid "From concept to launch, they were professional, creative, and always on time. A true partner for innovation."
+msgstr ""
+
+#: template-parts/patterns/testimonials.php:145
+msgid "Ethan Michael"
+msgstr ""
+
+#: template-parts/starter-templates/about.php:2
+msgid "This may be a good place to introduce yourself and your site or include some credits. You can also promote your core products or services to your target market."
+msgstr ""
+
+#: template-parts/starter-templates/about.php:6
+msgid "Our Vision"
+msgstr ""
+
+#: template-parts/starter-templates/about.php:10
+msgid "This section can outline the fundamental purpose of the company's existence (what problem it solves/what need it fulfills)."
+msgstr ""
+
+#: template-parts/starter-templates/about.php:14
+msgid "Our Values"
+msgstr ""
+
+#: template-parts/starter-templates/about.php:18
+msgid "3-5 core values (e.g., innovation, integrity, customer-centricity). Team culture (e.g., flat management structure, remote work, employee benefits)."
+msgstr ""
+
+#: template-parts/starter-templates/about.php:22
+msgid "Our Story"
+msgstr ""
+
+#: template-parts/starter-templates/about.php:26
+msgid "Introduce the founder's background (e.g., professional experience, entrepreneurial motivation), the opportunity that sparked the venture (e.g., market gaps, personal pain points, or societal issues), early challenges (funding, technology, team building, etc.), and key turning points."
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:10
+msgid "Address"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:10
+msgid "123 Main Street<br>New York, NY 10001"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:14
+msgid "Hours"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:14
+msgid "Monday-Friday: 9:00AM-5:00PM"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:14
+msgid "Saturday &amp; Sunday: 11:00AM-3:00PM"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:19
+msgid "Email"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:19
+msgid "admin@example.com"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:23
+msgid "Phone"
+msgstr ""
+
+#: template-parts/starter-templates/contact.php:23
+msgid "+1 123-456-7890"
+msgstr ""
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Inter"
+msgstr ""
+
+#: theme.json
+msgctxt "Font family name"
+msgid "Cardo"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Inherit"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Extra Small"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Small"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Base"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "Extra Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "2X Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "3X Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "4X Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "5X Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "6X Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "7X Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "8X Large"
+msgstr ""
+
+#: theme.json
+msgctxt "Font size name"
+msgid "9X Large"
+msgstr ""
