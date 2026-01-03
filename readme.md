@@ -1,6 +1,6 @@
-#![Shipping Icon](https://sourovdev.space/logo-full.svg) 
+![Shipping Icon](https://sourovdev.space/logo-full.svg) 
 
-FkuentCart Universal Restriction System
+FluentCart ShippingTask: Universal Restriction System
 
 A powerful and flexible **country-based shipping restriction system** built for **FluentCart (WordPress)** with a modern **Vue.js + Tailwind CSS** admin UI and real-time checkout validation.
 
