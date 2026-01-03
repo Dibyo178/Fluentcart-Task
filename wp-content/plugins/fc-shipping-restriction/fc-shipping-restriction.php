@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: FluentCart Shipping Restriction
  * Description: Restrict shipping by country with a professional Vue.js UI and real-time validation.
@@ -12,12 +13,12 @@ if (!defined('ABSPATH')) exit;
 // 1. Setup Admin Menu
 add_action('admin_menu', function () {
     add_menu_page(
-        'Shipping Rules', 
-        'FC Shipping', 
-        'manage_options', 
-        'fc-shipping-restrictions', 
-        'fc_render_admin_page', 
-        'dashicons-admin-site', 
+        'Shipping Rules',
+        'FC Shipping',
+        'manage_options',
+        'fc-shipping-restrictions',
+        'fc_render_admin_page',
+        'dashicons-admin-site',
         56
     );
 });
@@ -25,25 +26,28 @@ add_action('admin_menu', function () {
 // 2. Data Persistence via AJAX (MySQL Storage)
 add_action('wp_ajax_fc_save_shipping_settings', function () {
     check_ajax_referer('fc_shipping_nonce', 'nonce');
-    
-    if(isset($_POST['allowed'])) {
+
+    if (isset($_POST['allowed'])) {
         update_option('fc_allowed_countries', json_decode(stripslashes($_POST['allowed']), true));
     }
-    
-    if(isset($_POST['excluded'])) {
+
+    if (isset($_POST['excluded'])) {
         update_option('fc_excluded_countries', json_decode(stripslashes($_POST['excluded']), true));
     }
-    
+
     wp_send_json_success();
 });
 
 // 3. Admin UI 
-function fc_render_admin_page() {
-    ?>
+function fc_render_admin_page()
+{
+?>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     <div id="fcApp" class="min-h-screen bg-slate-50 p-6 md:p-12" v-cloak>
         <div class="max-w-5xl mx-auto">
             <div class="flex items-center justify-between mb-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-200">
@@ -88,7 +92,7 @@ function fc_render_admin_page() {
                                 <span class="font-black">{{c}}</span>
                                 <button @click="remove('allowed', i)" class="text-slate-400 group-hover:text-emerald-100">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+                                        <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
                                     </svg>
                                 </button>
                             </div>
@@ -120,7 +124,7 @@ function fc_render_admin_page() {
                                 <span class="font-black">{{c}}</span>
                                 <button @click="remove('excluded', i)" class="text-slate-400 group-hover:text-rose-100">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+                                        <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
                                     </svg>
                                 </button>
                             </div>
@@ -129,134 +133,166 @@ function fc_render_admin_page() {
                     </div>
                 </div>
             </div>
-        
+
         </div>
     </div>
 
     <script>
-    const { createApp } = Vue;
-    createApp({
-        data() { 
-            return { 
-                allowed: <?php echo json_encode(get_option('fc_allowed_countries', [])); ?>, 
-                excluded: <?php echo json_encode(get_option('fc_excluded_countries', [])); ?>, 
-                newAllowed: '', 
-                newExcluded: '', 
-                saving: false 
-            } 
-        },
-        methods: {
-            add(type) {
-                let f = type === 'allowed' ? 'newAllowed' : 'newExcluded';
-                let val = this[f].toUpperCase().trim();
-                if(val && !this[type].includes(val)) { 
-                    this[type].push(val); 
-                    this[f] = ''; 
+        const {
+            createApp
+        } = Vue;
+        createApp({
+            data() {
+                return {
+                    allowed: <?php echo json_encode(get_option('fc_allowed_countries', [])); ?>,
+                    excluded: <?php echo json_encode(get_option('fc_excluded_countries', [])); ?>,
+                    newAllowed: '',
+                    newExcluded: '',
+                    saving: false
                 }
             },
-            remove(type, i) { 
-                this[type].splice(i, 1); 
-            },
-            async save() { 
-                this.saving = true; 
-                const data = new FormData(); 
-                data.append('action', 'fc_save_shipping_settings'); 
-                data.append('nonce', "<?php echo wp_create_nonce('fc_shipping_nonce'); ?>"); 
-                data.append('allowed', JSON.stringify(this.allowed)); 
-                data.append('excluded', JSON.stringify(this.excluded)); 
-                try {
-                    await axios.post(ajaxurl, data); 
-                    alert('Settings Updated Successfully! ✅'); 
-                } catch (e) { 
-                    alert('Error saving settings! ❌'); 
-                }
-                this.saving = false; 
-            }
-        }
-    }).mount('#fcApp');
-    </script>
-    <style>
-        [v-cloak] { display: none; } 
-        #adminmenuwrap { z-index: 999; }
-    </style>
-    <?php
+            methods: {
+                add(type) {
+                    let f = type === 'allowed' ? 'newAllowed' : 'newExcluded';
+                    let val = this[f].toUpperCase().trim();
+                    if (val && !this[type].includes(val)) {
+                        this[type].push(val);
+                        this[f] = '';
+                    }
+                },
+                remove(type, i) {
+                    this[type].splice(i, 1);
+                },
+                async save() {
+    this.saving = true;
+    const data = new FormData();
+    data.append('action', 'fc_save_shipping_settings');
+    data.append('nonce', "<?php echo wp_create_nonce('fc_shipping_nonce'); ?>");
+    data.append('allowed', JSON.stringify(this.allowed));
+    data.append('excluded', JSON.stringify(this.excluded));
+    try {
+        await axios.post(ajaxurl, data);
+        Swal.fire({
+            icon: 'success',
+            title: 'Details Updated!',
+            text: 'Your shipping rules have been saved successfully.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    } catch (e) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'There was an error saving your details.'
+        });
+    }
+    this.saving = false;
 }
 
-// 4. Frontend Real-time Validation and Alert Handling
+            }
+        }).mount('#fcApp');
+    </script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        #adminmenuwrap {
+            z-index: 999;
+        }
+    </style>
+<?php
+}
+
+// 4. Frontend Real-time Validation
 add_action('wp_footer', function() {
     $allowed = (array)get_option('fc_allowed_countries', []);
     $excluded = (array)get_option('fc_excluded_countries', []);
     ?>
     <script type="text/javascript">
-    (function($) {
-        "use strict";
-        const allowed = <?php echo json_encode($allowed); ?>;
-        const excluded = <?php echo json_encode($excluded); ?>;
-        const msgText = "🚫 We do not ship to this country.";
+    (function() {
+        const normAllowed = <?php echo json_encode(array_map('strtoupper', array_map('trim', $allowed))); ?>;
+        const normExcluded = <?php echo json_encode(array_map('strtoupper', array_map('trim', $excluded))); ?>;
         const msgId = 'fc-restriction-alert';
 
-        function checkLogic() {
-            // 1. Detect Country Value (Multiple Selector Support)
-            let country = $('select[name*="country"]').val() || 
-                          $('[data-field="country"] select').val() ||
-                          $('.fct_country_select select').val() ||
-                          $('#billing_country').val();
+        function updateCheckoutState() {
+            const countryEl = document.querySelector('select[name*="country"], #billing_country, [name="shipping_country"]');
+            const btn = document.querySelector('.fct-checkout-submit, .fc_place_order, .fct_btn_primary, button[type="submit"], #fct_order_submit, #place_order');
+            if (!countryEl || !btn) return false;
 
-            if (!country) return;
-            country = country.toUpperCase();
+            const country = (countryEl.value || "").toUpperCase().trim();
 
             let isBlocked = false;
-            // Exclusion Logic
-            if (excluded.includes(country)) isBlocked = true;
-            // Whitelist Logic
-            if (allowed.length > 0 && !allowed.includes(country)) isBlocked = true;
+            let msg = "";
+            let bgColor = '';
+            let textColor = '#fff';
 
-            // 2. Submit Button Selector
-            const btn = $('.fct-checkout-submit, .fc_place_order, .fct_btn_primary, button[type="submit"], #fct_order_submit, #place_order');
-
-            if (isBlocked) {
-                // 3. Inject Alert Message
-                if ($('#' + msgId).length === 0) {
-                    const alertHtml = `<div id="${msgId}" style="background:#be123c; color:#fff; padding:20px; margin:20px 0; border-radius:12px; text-align:center; font-weight:bold; border:2px solid #9f1239; font-size:18px; z-index:9999; position:relative; clear:both;">${msgText}</div>`;
-                    
-                    let target = $('.fct-checkout-payment, .fc_payment_methods, .fct_btn_primary, #payment').first();
-                    
-                    if(target.length) {
-                        target.before(alertHtml);
-                    } else {
-                        $('form').first().prepend(alertHtml);
-                    }
-                }
-                
-                // 4. Lock Transaction Button
-                btn.attr('disabled', 'disabled').css({
-                    'opacity':'0.3', 
-                    'pointer-events':'none', 
-                    'cursor':'not-allowed'
-                });
+            // Logic: Excluded > Allowed list > Not listed
+            if (normExcluded.includes(country)) {
+                isBlocked = true;
+                msg = "🚫 We do not ship to this country.";
+                bgColor = '#be123c'; // red
+            } else if (normAllowed.length > 0 && !normAllowed.includes(country)) {
+                isBlocked = true;
+                msg = "⚠️ This country is not allowed for shipping.";
+                bgColor = '#000'; // black
             } else {
-                // Remove Alert and Unlock Button
-                $('#' + msgId).remove();
-                btn.removeAttr('disabled').css({
-                    'opacity':'1', 
-                    'pointer-events':'auto', 
-                    'cursor':'pointer'
-                });
+                isBlocked = false; // allowed countries: no message
             }
+
+            // Remove existing message if any
+            let existingMsg = document.getElementById(msgId);
+            if (isBlocked) {
+                if (!existingMsg) {
+                    existingMsg = document.createElement('div');
+                    existingMsg.id = msgId;
+                    btn.parentNode.insertBefore(existingMsg, btn);
+                }
+                existingMsg.innerText = msg;
+                existingMsg.style.cssText = `
+                    background:${bgColor};
+                    color:${textColor};
+                    padding:15px;
+                    margin:10px 0;
+                    border-radius:8px;
+                    text-align:center;
+                    font-weight:bold;
+                    font-size:16px;
+                    width:100%;
+                    display:block;
+                    clear:both;
+                `;
+                btn.disabled = true;
+                btn.style.opacity = '0.4';
+                btn.style.pointerEvents = 'none';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                if (existingMsg) existingMsg.remove();
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+                btn.style.cursor = 'pointer';
+            }
+
+            return true;
         }
 
-        $(document).ready(function() {
-            // Event Listeners
-            $(document).on('change', 'select[name*="country"]', checkLogic);
-            
-            // Mutation Observer for dynamic content updates
-            const observer = new MutationObserver(checkLogic);
-            observer.observe(document.body, { childList: true, subtree: true });
-            
-            // Polling backup for legacy environments
-            setInterval(checkLogic, 1500);
+        // POLLING until checkout fields exist
+        const intervalId = setInterval(() => {
+            if (updateCheckoutState()) clearInterval(intervalId);
+        }, 300);
+
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('select[name*="country"], #billing_country, [name="shipping_country"]')) {
+                updateCheckoutState();
+            }
         });
-    })(jQuery);
+
+    })();
     </script>
     <?php
 }, 999);
+
+
+
+
