@@ -10,9 +10,9 @@ A powerful and flexible **country-based shipping restriction system** built for 
 
 ## 🔗 Project Links
 
-- 🌐 **Live Demo:** [Live Link](#)
-- 📦 **Project Zip File:** [Download Project](#)
-- 🗄️ **MySQL File:** [SQL File](#)
+- 🌐 **Live Demo:** [Live Link](https://fluentcart.sourovdev.space/)
+- 📦 **Project Zip File:** [Download Project](https://drive.google.com/file/d/1z5pSQvi3P6FTLUGVpLpUpq0V7jLP7IhG/view?usp=drive_link)
+- 🗄️ **MySQL File:** [SQL File](https://drive.google.com/file/d/1mIsXxTjtkqn6K4pucWFAsLQ0IRnwhh9H/view?usp=drive_link)
 
 ---
 
