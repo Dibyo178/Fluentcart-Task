@@ -90,16 +90,11 @@ A powerful and flexible **country-based shipping restriction system** built for 
 - **Tailwind CSS**
 - **Axios**
 - **SweetAlert2**
+- **Javascript**
 - **PHP + MySQL**
 
 ---
 
-## 📌 Notes
-
-> GitHub does not support inline PDF previews in `README.md`.  
-> For documentation, use **image previews + PDF links** or GitHub’s built-in PDF viewer.
-
----
 
 ## 👨‍💻 Author
 
