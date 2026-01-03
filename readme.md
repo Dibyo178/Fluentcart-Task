@@ -1,30 +1,109 @@
- FluentCart ShippingTask: Universal Restriction System
-   Project Live Link: Live link
-      Project Zip File: Project File
-       Mysql File : Sql file
+# 🚚 FluentCart ShippingTask: Universal Restriction System
 
-                                          Project Demonstration
+A powerful and flexible **country-based shipping restriction system** built for **FluentCart (WordPress)** with a modern **Vue.js + Tailwind CSS** admin UI and real-time checkout validation.
 
-Phase 1: Plugin Installation & Activation
-Plugin Management: The system starts with the installation of the "FluentCart Shipping Restriction" plugin alongside the core FluentCart plugin in the WordPress dashboard.
-Dashboard UI: Once activated, a dedicated FC Shipping menu appears, featuring a clean Vue.js interface for managing shipping zones.
-Phase 2: Global Admin Configuration
-Shipping Zones: Admins can define specific "Zone Names" (e.g., Main Zone) and decide if the rules apply to the "Whole World" or specific regions.
- Method Setup: Within each zone, you can enable "Standard Shipping" with custom Flat Rate amounts and aggregation rules.
-Phase 3: Product & Store Management
-Product Creation: Admins can easily add new products, such as an iPhone 14, and categorize them as Physical or Digital.
-Publishing Control: Every product has a dedicated management panel to control its status (Draft/Publish) and URL slugs.
-Page Setup: The plugin offers a "Create Shop Page" wizard to automatically generate the necessary frontend shortcodes.
-Phase 4: Customer Shopping Journey
-Cart Interaction: Customers browse the shop, select items like the iPhone 14, and view their subtotal in a modern sliding side-cart.
-Proceed to Checkout: From the cart, the "Go to Checkout" button leads the user to the final validation stage.
-Phase 5: Real-time Validation & Security
-Location Detection: On the checkout page, the system monitors the "Billing Address" country selection in real-time.
-Restricted Country Logic: If a user selects a country that was added to the Excluded (e.g., United Kingdom):
-Visual Warning: A high-visibility Red Alert appears: " We do not ship to this country".
-Action Prevention: The "Place Order" button is automatically disabled to prevent unauthorized transactions.
+![Shipping Icon](https://i.ibb.co.com/W4cgwDRJ/download.png)
 
- 
+---
+
+## 🔗 Project Links
+
+- 🌐 **Live Demo:** [Live Link](#)
+- 📦 **Project Zip File:** [Download Project](#)
+- 🗄️ **MySQL File:** [SQL File](#)
+
+---
+
+## 🎥 Project Demonstration
+
+### 🔹 Phase 1: Plugin Installation & Activation
+- Install and activate **FluentCart Shipping Restriction** alongside the core **FluentCart** plugin.
+- After activation, a new **FC Shipping** menu appears in the WordPress dashboard.
+- The admin panel is powered by **Vue.js**, providing a clean and modern UI.
+
+---
+
+### 🔹 Phase 2: Global Admin Configuration
+- **Shipping Zones:**  
+  Admins can define zone names (e.g. *Main Zone*).
+- **Coverage Area:**  
+  Rules can apply to the **Whole World** or selected countries.
+- **Shipping Method Setup:**  
+  Enable **Standard Shipping** with:
+  - Custom flat rate pricing  
+  - Aggregation rules  
+
+---
+
+### 🔹 Phase 3: Product & Store Management
+- **Product Creation:**  
+  Add products like *iPhone 14* as **Physical** or **Digital** items.
+- **Publishing Control:**  
+  Manage product status (Draft / Publish) and custom URL slugs.
+- **Page Setup Wizard:**  
+  Automatically generate required shop and checkout pages using shortcodes.
+
+---
+
+### 🔹 Phase 4: Customer Shopping Journey
+- **Cart Interaction:**  
+  Customers browse products and view subtotal in a modern **sliding side-cart**.
+- **Checkout Flow:**  
+  Clicking **Go to Checkout** takes users to the final validation step.
+
+---
+
+### 🔹 Phase 5: Real-time Validation & Security
+- **Live Country Detection:**  
+  The system monitors the **Billing Address → Country** field in real-time.
+- **Restricted Country Logic:**  
+  If a customer selects an **Excluded Country** (e.g. *United Kingdom*):
+  
+  🚫 **Visual Warning:**  
+  A red alert message appears:  
+  > **“We do not ship to this country.”**
+  
+  🔒 **Action Prevention:**  
+  The **Place Order** button is automatically disabled to prevent unauthorized checkout.
+
+---
+
+## ✅ Key Features
+
+- Country-based **Allowed & Excluded** logic
+- Priority handling: **Excluded > Allowed > Others**
+- Real-time frontend validation (no page reload)
+- Secure AJAX-based data saving
+- SweetAlert-powered admin notifications
+- Clean Vue 3 + Tailwind CSS UI
+- Fully compatible with **FluentCart**
+
+---
+
+## 🛠️ Tech Stack
+
+- **WordPress Plugin**
+- **FluentCart**
+- **Vue.js 3**
+- **Tailwind CSS**
+- **Axios**
+- **SweetAlert2**
+- **PHP + MySQL**
+
+---
+
+## 📌 Notes
+
+> GitHub does not support inline PDF previews in `README.md`.  
+> For documentation, use **image previews + PDF links** or GitHub’s built-in PDF viewer.
+
+---
+
+## 👨‍💻 Author
+
+**Sourov Purkayastha**  
+🌐 https://sourovdev.space/
+
 
 
 
