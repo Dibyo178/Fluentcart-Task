@@ -164,30 +164,30 @@ function fc_render_admin_page()
                     this[type].splice(i, 1);
                 },
                 async save() {
-    this.saving = true;
-    const data = new FormData();
-    data.append('action', 'fc_save_shipping_settings');
-    data.append('nonce', "<?php echo wp_create_nonce('fc_shipping_nonce'); ?>");
-    data.append('allowed', JSON.stringify(this.allowed));
-    data.append('excluded', JSON.stringify(this.excluded));
-    try {
-        await axios.post(ajaxurl, data);
-        Swal.fire({
-            icon: 'success',
-            title: 'Details Updated!',
-            text: 'Your shipping rules have been saved successfully.',
-            timer: 2000,
-            showConfirmButton: false
-        });
-    } catch (e) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error!',
-            text: 'There was an error saving your details.'
-        });
-    }
-    this.saving = false;
-}
+                    this.saving = true;
+                    const data = new FormData();
+                    data.append('action', 'fc_save_shipping_settings');
+                    data.append('nonce', "<?php echo wp_create_nonce('fc_shipping_nonce'); ?>");
+                    data.append('allowed', JSON.stringify(this.allowed));
+                    data.append('excluded', JSON.stringify(this.excluded));
+                    try {
+                        await axios.post(ajaxurl, data);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Details Updated!',
+                            text: 'Your shipping rules have been saved successfully.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } catch (e) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'There was an error saving your details.'
+                        });
+                    }
+                    this.saving = false;
+                }
 
             }
         }).mount('#fcApp');
@@ -294,5 +294,68 @@ add_action('wp_footer', function() {
 }, 999);
 
 
+// 5. Save Restriction Info to Order Meta
+add_action('fluent_cart/order_created', function($data) {
+    global $wpdb;
+    
+    if (!isset($data['order'])) {
+        error_log('FluentCart Shipping Restriction: No order in data on order_created hook.');
+        return;
+    }
+    
+    $order = $data['order'];
+    $order_id = isset($order->id) ? intval($order->id) : 0;
+    $order_country = strtoupper(trim($order->billing_address['country'] ?? ''));
+    
+    if ($order_id === 0) {
+        error_log('FluentCart Shipping Restriction: Invalid order ID on order_created hook.');
+        return;
+    }
+    
+    // Get plugin settings
+    $allowed = (array)get_option('fc_allowed_countries', []);
+    $excluded = (array)get_option('fc_excluded_countries', []);
+    
+    $status = 'Passed';
+    if (in_array($order_country, $excluded)) {
+        $status = 'Flagged: Excluded Country';
+    } elseif (!empty($allowed) && !in_array($order_country, $allowed)) {
+        $status = 'Flagged: Not in Allowed List';
+    }
 
+    // Define the custom FluentCart meta table
+    $table_name = $wpdb->prefix . 'fct_order_meta';
 
+    // Insert Validation Status
+    $wpdb->insert($table_name, [
+        'order_id'   => $order_id,
+        'meta_key'   => '_fc_shipping_validation',
+        'meta_value' => $status,
+        'created_at' => current_time('mysql'),
+        'updated_at' => current_time('mysql')
+    ]);
+
+    // Insert Processing Time
+    $wpdb->insert($table_name, [
+        'order_id'   => $order_id,
+        'meta_key'   => '_fc_processed_at',
+        'meta_value' => current_time('mysql'),
+        'created_at' => current_time('mysql'),
+        'updated_at' => current_time('mysql')
+    ]);
+
+    // Store allowed/excluded country info as JSON for reports/exports
+    $restrictions = json_encode([
+        'allowed_countries' => $allowed,
+        'excluded_countries' => $excluded,
+        'order_country' => $order_country,
+        'validation_status' => $status
+    ]);
+    $wpdb->insert($table_name, [
+        'order_id'   => $order_id,
+        'meta_key'   => '_fc_shipping_restrictions',
+        'meta_value' => $restrictions,
+        'created_at' => current_time('mysql'),
+        'updated_at' => current_time('mysql')
+    ]);
+}, 10, 1);
