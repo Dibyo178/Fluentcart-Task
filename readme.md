@@ -38,7 +38,7 @@
 ## 🚀 Installation & Setup
 
 1. Ensure the **FluentCart** core plugin is installed and activated on your WordPress site.
-2. Upload the `fluentcart-shipping-restriction-pro` folder to the `/wp-content/plugins/` directory.
+2. Upload the `fluentcart-shipping-restriction` folder to the `/wp-content/plugins/` directory.
 3. Activate the plugin through the **'Plugins'** menu in WordPress.
 4. Navigate to **FC Shipping** in the sidebar to configure your shipping zones.
 
