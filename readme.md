@@ -1,105 +1,86 @@
 ![Shipping Icon](https://sourovdev.space/logo-full.svg) 
 
-FluentCart ShippingTask: Universal Restriction System
+# FluentCart Shipping Restriction
 
-A powerful and flexible **country-based shipping restriction system** built for **FluentCart (WordPress)** with a modern **Vue.js + Tailwind CSS** admin UI and real-time checkout validation.
-
-
+**FluentCart Shipping Restriction** is a powerful WordPress plugin that gives store owners granular control over shipping destinations. Built with a modern **Vue.js 3** and **Tailwind CSS** admin interface, it offers real-time checkout validation to prevent unauthorized orders from restricted regions.
 
 ---
 
-## 🔗 Project Links
+## 🔗 Project Resources
 
-- 🌐 **Live Demo:** [Live Link](https://fluentcart.sourovdev.space/)
-- 📦 **Project Zip File:** [Download Project](https://drive.google.com/file/d/1z5pSQvi3P6FTLUGVpLpUpq0V7jLP7IhG/view?usp=drive_link)
-- 🗄️ **MySQL File:** [SQL File](https://drive.google.com/file/d/1mIsXxTjtkqn6K4pucWFAsLQ0IRnwhh9H/view?usp=drive_link)
-
----
-
-## 🎥 Project Demonstration
-
-### 🔹 Phase 1: Plugin Installation & Activation
-- Install and activate **FluentCart Shipping Restriction** alongside the core **FluentCart** plugin.
-- After activation, a new **FC Shipping** menu appears in the WordPress dashboard.
-- The admin panel is powered by **Vue.js**, providing a clean and modern UI.
+- 🌐 **Live Demo:** [fluentcart.sourovdev.space](https://fluentcart.sourovdev.space/)
+- 👨‍💻 **Developer Portfolio:** [sourovdev.space](https://sourovdev.space/)
+- 📦 **Tech Stack:** PHP, MySQL, Vue.js 3, Tailwind CSS, Axios, FluentCart Hooks.
 
 ---
 
-### 🔹 Phase 2: Global Admin Configuration
-- **Shipping Zones:**  
-  Admins can define zone names (e.g. *Main Zone*).
-- **Coverage Area:**  
-  Rules can apply to the **Whole World** or selected countries.
-- **Shipping Method Setup:**  
-  Enable **Standard Shipping** with:
-  - Custom flat rate pricing  
-  - Aggregation rules  
+## ✨ Core Features
+
+### 🌍 Universal Shipping Restrictions
+- **Allowed List:** Restrict shipping only to specific countries (Whitelist).
+- **Excluded List:** Block specific countries even if global shipping is enabled (Blacklist).
+- **Conflict Management:** Built-in logic to prevent adding the same country to both lists simultaneously.
+
+### 🛠 Dynamic System Modes
+- **Global Mode:** Apply shipping rules across all available shipping methods.
+- **Per Method Restriction:** Select a specific shipping method from the dropdown to apply rules exclusively to that method.
+
+### ⚡ Real-time Checkout Validation
+- **Live Detection:** Monitors the country selection field on the checkout page instantly.
+- **Smart Prevention:** Automatically disables the **"Place Order"** button and displays a high-visibility warning message if a restricted country is selected.
+
+### 📊 Order Metadata & Logging
+- **Detailed Insights:** Every order captures the country and validation status (Passed/Flagged) in the metadata.
+- **Admin Logs:** View the last 10 restriction activities directly from the plugin dashboard to monitor blocked attempts.
 
 ---
 
-### 🔹 Phase 3: Product & Store Management
-- **Product Creation:**  
-  Add products like *iPhone 14* as **Physical** or **Digital** items.
-- **Publishing Control:**  
-  Manage product status (Draft / Publish) and custom URL slugs.
-- **Page Setup Wizard:**  
-  Automatically generate required shop and checkout pages using shortcodes.
+## 🚀 Installation & Setup
+
+1. Ensure the **FluentCart** core plugin is installed and activated on your WordPress site.
+2. Upload the `fluentcart-shipping-restriction-pro` folder to the `/wp-content/plugins/` directory.
+3. Activate the plugin through the **'Plugins'** menu in WordPress.
+4. Navigate to **FC Shipping** in the sidebar to configure your shipping zones.
 
 ---
 
-### 🔹 Phase 4: Customer Shopping Journey
-- **Cart Interaction:**  
-  Customers browse products and view subtotal in a modern **sliding side-cart**.
-- **Checkout Flow:**  
-  Clicking **Go to Checkout** takes users to the final validation step.
+## 🛠 Tech Stack Details
+
+| Component | Technology Used |
+| :--- | :--- |
+| **Backend** | PHP (WordPress Plugin API) |
+| **Database** | MySQL (WPDB Custom Meta) |
+| **Frontend UI** | Vue.js 3 (Composition-ready) |
+| **Styling** | Tailwind CSS 3.0 |
+| **Interactions** | Axios & SweetAlert2 |
+| **UI Components** | Dashicons & Custom SVGs |
 
 ---
 
-### 🔹 Phase 5: Real-time Validation & Security
-- **Live Country Detection:**  
-  The system monitors the **Billing Address → Country** field in real-time.
-- **Restricted Country Logic:**  
-  If a customer selects an **Excluded Country** (e.g. *United Kingdom*):
-  
-  🚫 **Visual Warning:**  
-  A red alert message appears:  
-  > **“We do not ship to this country.”**
-  
-  🔒 **Action Prevention:**  
-  The **Place Order** button is automatically disabled to prevent unauthorized checkout.
+## 📸 Admin Dashboard Preview
+
+The admin panel features a clean, professional layout including:
+- **System Mode Selector:** Switch between Global and specific Shipping Method modes.
+- **Interactive Country Tags:** Add or remove country ISO codes using a sleek chip-based interface.
+- **Real-time Status Logs:** A dedicated section to track order validation history at a glance.
 
 ---
 
-## ✅ Key Features
+## ✅ Key Logic Flow
 
-- Country-based **Allowed & Excluded** logic
-- Priority handling: **Excluded > Allowed > Others**
-- Real-time frontend validation (no page reload)
-- Secure AJAX-based data saving
-- SweetAlert-powered admin notifications
-- Clean Vue 3 + Tailwind CSS UI
-- Fully compatible with **FluentCart**
+1. **Input:** The admin enters a country ISO code (e.g., US, UK, BD).
+2. **Priority:** The system prioritizes the **Excluded** list over the **Allowed** list for maximum security.
+3. **Frontend Hook:** A JavaScript observer monitors the checkout form.
+4. **Validation:** If the selection violates the rules, the checkout button is locked, and the reason is displayed to the user.
+5. **Final Log:** The validation status is recorded in the order metadata upon attempt.
 
 ---
-
-## 🛠️ Tech Stack
-
-- **WordPress Plugin**
-- **FluentCart**
-- **Vue.js 3**
-- **Tailwind CSS**
-- **Axios**
-- **SweetAlert2**
-- **Javascript**
-- **PHP + MySQL**
-
----
-
 
 ## 👨‍💻 Author
 
-**Sourov Purkayastha**  
-🌐 https://sourovdev.space/
+**Sourov Purkayastha** Full Stack Developer  
+🌐 [sourovdev.space](https://sourovdev.space/)
+
 
 
 
