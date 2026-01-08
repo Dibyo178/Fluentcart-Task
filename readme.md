@@ -57,7 +57,7 @@
 
 ---
 
-## 📸 Admin Dashboard Preview
+## Admin Dashboard Preview
 
 The admin panel features a clean, professional layout including:
 - **System Mode Selector:** Switch between Global and specific Shipping Method modes.
