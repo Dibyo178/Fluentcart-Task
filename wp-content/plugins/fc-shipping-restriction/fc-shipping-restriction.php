@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Plugin Name: FluentCart Shipping Restriction Pro
- * Description: Restrict shipping by country/method with professional Vue.js UI, dynamic method selection, and real-time logging.
- * Version: 3.6.2
+ * Plugin Name: FluentCart Shipping Restriction
+ * Description: Restrict shipping by country/method with professional Vue.js UI, dynamic method selection, and real-time validation.
+ * Version: 1.0.0
  * Author: Sourov Purkayastha
  */
 
