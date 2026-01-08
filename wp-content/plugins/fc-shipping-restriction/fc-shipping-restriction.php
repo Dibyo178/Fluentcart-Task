@@ -2,7 +2,7 @@
 
 /**
  * Plugin Name: FluentCart Shipping Restriction
- * Description: Restrict shipping by country/method with professional Vue.js UI, dynamic method selection, and real-time validation.
+ * Description: Restrict shipping by country/method with professional Vue.js UI and high-accuracy Excel reporting.
  * Version: 1.0.0
  * Author: Sourov Purkayastha
  */
@@ -14,7 +14,7 @@ add_action('admin_menu', function () {
     add_menu_page('Shipping Rules', 'FC Shipping', 'manage_options', 'fc-shipping-restrictions', 'fc_render_admin_page', 'dashicons-admin-site', 56);
 });
 
-// 2. Data Persistence via AJAX
+// 2. Data Persistence
 add_action('wp_ajax_fc_save_shipping_settings', function () {
     check_ajax_referer('fc_shipping_nonce', 'nonce');
     if (isset($_POST['allowed'])) update_option('fc_allowed_countries', json_decode(stripslashes($_POST['allowed']), true));
@@ -23,17 +23,31 @@ add_action('wp_ajax_fc_save_shipping_settings', function () {
     wp_send_json_success(['message' => 'Settings Updated']);
 });
 
-// 3. Admin UI Rendering
+// 3. Admin UI
 function fc_render_admin_page() {
     global $wpdb;
     
     $shipping_methods = $wpdb->get_results("SELECT id, title FROM {$wpdb->prefix}fct_shipping_methods");
     $allowed = get_option('fc_allowed_countries', []);
     $excluded = get_option('fc_excluded_countries', []);
-    $current_mode = get_option('fc_restriction_mode', 'global');
+    $current_mode = get_option('fc_restriction_mode', '');
     
+    // Fetch logs and prepare them for Vue
     $table_name = $wpdb->prefix . 'fct_order_meta';
-    $logs = $wpdb->get_results("SELECT order_id, meta_value, created_at FROM $table_name WHERE meta_key = '_fc_shipping_restrictions' ORDER BY created_at DESC LIMIT 15");
+    $raw_logs = $wpdb->get_results("SELECT order_id, meta_value, created_at FROM $table_name WHERE meta_key = '_fc_shipping_restrictions' ORDER BY created_at DESC LIMIT 100");
+    
+    $formatted_logs = [];
+    foreach($raw_logs as $log) {
+        $meta = json_decode($log->meta_value, true);
+        $formatted_logs[] = [
+            'id' => $log->order_id,
+            'country' => $meta['order_country'] ?? 'N/A',
+            'allowed' => implode(', ', (array)($meta['allowed_countries'] ?? [])),
+            'excluded' => implode(', ', (array)($meta['excluded_countries'] ?? [])),
+            'status' => str_replace('●', '', $meta['validation_status'] ?? 'N/A'),
+            'date' => $log->created_at
+        ];
+    }
 ?>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -50,9 +64,9 @@ function fc_render_admin_page() {
                     <div>
                         <h1 class="text-2xl font-black text-slate-800">Shipping Zone Setup</h1>
                         <div class="flex items-center gap-3 mt-2">
-                             <span class="text-[12px] font-bold text-slate-400 uppercase">Select Method:</span>
-                            <select v-model="mode" 
-                                class="text-xs font-black bg-slate-100 border-none rounded-lg px-3 py-1.5 outline-none text-indigo-600 uppercase cursor-pointer hover:bg-slate-200 transition-all">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">System Mode:</span>
+                            <select v-model="mode" class="text-xs font-black bg-slate-100 border-none rounded-lg px-3 py-1.5 outline-none text-indigo-600 uppercase cursor-pointer hover:bg-slate-200 transition-all">
+                                <option value="" disabled selected>SELECT METHOD</option>
                                 <option value="global">GLOBAL</option>
                                 <option v-for="method in shippingMethods" :key="method.id" :value="String(method.id)">
                                     PER METHOD: {{ method.title.toUpperCase() }}
@@ -61,7 +75,7 @@ function fc_render_admin_page() {
                         </div>
                     </div>
                 </div>
-                <button @click="saveSettings()" :disabled="saving" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-xl font-bold transition-all shadow-lg disabled:opacity-50">
+                <button @click="saveSettings()" :disabled="saving || !mode" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-xl font-bold transition-all shadow-lg disabled:opacity-50">
                     {{ saving ? 'Process...' : 'Save Configuration' }}
                 </button>
             </div>
@@ -103,6 +117,10 @@ function fc_render_admin_page() {
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                     <h2 class="text-lg font-bold text-slate-800">Applied Restriction Logs</h2>
+                    <button @click="exportToExcel" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        DOWNLOAD EXCEL REPORT
+                    </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -117,24 +135,21 @@ function fc_render_admin_page() {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <?php if ($logs): foreach ($logs as $log) : 
-                                $meta = json_decode($log->meta_value, true);
-                            ?>
-                                <tr class="hover:bg-slate-50 transition-colors">
-                                    <td class="p-5 font-bold text-indigo-600">#<?php echo esc_html($log->order_id); ?></td>
-                                    <td class="p-5"><span class="bg-slate-900 text-white px-2 py-1 rounded text-[10px] font-bold"><?php echo esc_html($meta['order_country'] ?? 'N/A'); ?></span></td>
-                                    <td class="p-5 text-[9px] font-bold text-emerald-600"><?php echo implode(', ', (array)($meta['allowed_countries'] ?? [])); ?></td>
-                                    <td class="p-5 text-[9px] font-bold text-rose-600"><?php echo implode(', ', (array)($meta['excluded_countries'] ?? [])); ?></td>
-                                    <td class="p-5 text-[10px] font-black uppercase">
-                                        <span class="<?php echo (strpos($meta['validation_status'] ?? '', 'Passed') !== false) ? 'text-emerald-500' : 'text-rose-500'; ?>">
-                                            ● <?php echo esc_html($meta['validation_status'] ?? 'N/A'); ?>
-                                        </span>
-                                    </td>
-                                    <td class="p-5 text-slate-300 text-xs"><?php echo esc_html($log->created_at); ?></td>
-                                </tr>
-                            <?php endforeach; else: ?>
-                                <tr><td colspan="6" class="p-10 text-center text-slate-400 font-bold">No history available.</td></tr>
-                            <?php endif; ?>
+                            <tr v-for="log in logs" :key="log.id" class="hover:bg-slate-50 transition-colors">
+                                <td class="p-5 font-bold text-indigo-600">#{{ log.id }}</td>
+                                <td class="p-5"><span class="bg-slate-900 text-white px-2 py-1 rounded text-[10px] font-bold">{{ log.country }}</span></td>
+                                <td class="p-5 text-[9px] font-bold text-emerald-600">{{ log.allowed }}</td>
+                                <td class="p-5 text-[9px] font-bold text-rose-600">{{ log.excluded }}</td>
+                                <td class="p-5 text-[10px] font-black uppercase">
+                                    <span :class="log.status.includes('Passed') ? 'text-emerald-500' : 'text-rose-500'">
+                                        ● {{ log.status }}
+                                    </span>
+                                </td>
+                                <td class="p-5 text-slate-300 text-xs">{{ log.date }}</td>
+                            </tr>
+                            <tr v-if="logs.length === 0">
+                                <td colspan="6" class="p-10 text-center text-slate-400 font-bold">No history available.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -149,8 +164,9 @@ function fc_render_admin_page() {
                 return {
                     allowed: <?php echo json_encode($allowed); ?>,
                     excluded: <?php echo json_encode($excluded); ?>,
-                    mode: "<?php echo esc_attr($current_mode); ?>",
+                    mode: "<?php echo $current_mode; ?>",
                     shippingMethods: <?php echo json_encode($shipping_methods); ?>,
+                    logs: <?php echo json_encode($formatted_logs); ?>,
                     newAllowed: '',
                     newExcluded: '',
                     saving: false
@@ -163,11 +179,6 @@ function fc_render_admin_page() {
                     if (!val) return;
                     if (this[type].includes(val)) {
                         Swal.fire({ icon: 'info', title: 'Already Added', text: `${val} is already in the list.` });
-                        this[field] = ''; return;
-                    }
-                    let otherType = type === 'allowed' ? 'excluded' : 'allowed';
-                    if (this[otherType].includes(val)) {
-                        Swal.fire({ icon: 'warning', title: 'Conflict Detected', text: `You cannot add ${val} because it is already in the ${otherType} list.` });
                         this[field] = ''; return;
                     }
                     this[type].push(val);
@@ -185,12 +196,39 @@ function fc_render_admin_page() {
                     try {
                         const res = await axios.post(ajaxurl, data);
                         if (res.data.success) {
-                            Swal.fire({ icon: 'success', title: 'Saved!', showConfirmButton: false, timer: 1000 })
-                            .then(() => { window.location.reload(); });
+                            Swal.fire({ icon: 'success', title: 'Saved!', showConfirmButton: false, timer: 1000 }).then(() => window.location.reload());
                         }
                     } catch (e) { Swal.fire('Error', 'Failed to save', 'error'); }
                     this.saving = false;
-                }
+                },
+               exportToExcel() {
+    let csvContent = "\uFEFF"; // Excel UTF-8 for support 
+    csvContent += "ORDER,COUNTRY,ALLOWED RULES,EXCLUDED RULES,STATUS,DATE\r\n";
+    
+    this.logs.forEach(log => {
+        
+        let shortDate = log.date.split(' ')[0]; 
+        
+        let row = [
+            `"#${log.id}"`,
+            `"${log.country}"`,
+            `"${log.allowed}"`,
+            `"${log.excluded}"`,
+            `"${log.status.trim()}"`,
+            `"${shortDate}"` // smmal date configure
+        ].join(",");
+        csvContent += row + "\r\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "shipping_report_" + new Date().toISOString().slice(0,10) + ".csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
             }
         }).mount('#fcApp');
     </script>
@@ -201,7 +239,7 @@ function fc_render_admin_page() {
 add_action('wp_footer', function () {
     $allowed = (array)get_option('fc_allowed_countries', []);
     $excluded = (array)get_option('fc_excluded_countries', []);
-    $systemMode = get_option('fc_restriction_mode', 'global');
+    $systemMode = get_option('fc_restriction_mode', '');
     
     if ($systemMode !== 'global' && is_numeric($systemMode)) {
         echo "<style>
@@ -221,48 +259,35 @@ add_action('wp_footer', function () {
             const msgId = 'fc-restriction-alert';
 
             function check() {
+                if (!systemMode) return;
                 const countryEl = document.querySelector('select[name*="country"], #billing_country, [name="shipping_country"], .fc_country_select');
                 const btn = document.querySelector('.fct-checkout-submit, .fc_place_order, button[type="submit"], #place_order');
-                
                 const selectedInput = document.querySelector('input[name="fc_shipping_method"]:checked') || 
                                      document.querySelector('input[name="shipping_method"]:checked') ||
                                      document.querySelector('input[name="fc_selected_shipping_method"]');
-                
                 if (!countryEl || !btn) return;
-
                 const activeMethodId = selectedInput ? String(selectedInput.value) : null;
                 const restrictedMode = String(systemMode);
-
-                // AUTO-SELECT LOGIC: If a specific method is set, force select it
                 if (restrictedMode !== 'global') {
                     const targetRadio = document.querySelector(`input[name="fc_shipping_method"][value="${restrictedMode}"], input[name="shipping_method"][value="${restrictedMode}"]`);
-                    
                     if (targetRadio && !targetRadio.checked) {
                         targetRadio.checked = true;
                         targetRadio.dispatchEvent(new Event('change', { bubbles: true }));
                     }
-
                     if (activeMethodId !== restrictedMode) {
                         resetUI(btn); 
                         return; 
                     }
                 }
-
                 const country = (countryEl.value || "").toUpperCase().trim();
                 let isBlocked = false;
                 let msg = "";
                 let bgColor = "";
-
                 if (normExcluded.includes(country)) {
-                    isBlocked = true;
-                    msg = "🚫 We do not ship to this country.";
-                    bgColor = "#78350f";
+                    isBlocked = true; msg = "🚫 We do not ship to this country."; bgColor = "#78350f";
                 } else if (normAllowed.length > 0 && !normAllowed.includes(country)) {
-                    isBlocked = true;
-                    msg = "⚠️ This country is not allowed for shipping.";
-                    bgColor = "#000000";
+                    isBlocked = true; msg = "⚠️ This country is not allowed for shipping."; bgColor = "#000000";
                 }
-
                 if (isBlocked) {
                     let alert = document.getElementById(msgId);
                     if (!alert) {
@@ -272,15 +297,11 @@ add_action('wp_footer', function () {
                     }
                     alert.innerText = msg;
                     alert.style.cssText = `background:${bgColor}; color:#ffffff; padding:12px; margin:10px 0; border-radius:10px; text-align:center; font-weight:bold; font-size:14px;`;
-                    
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.pointerEvents = 'none';
+                    btn.disabled = true; btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none';
                 } else {
                     resetUI(btn);
                 }
             }
-
             function resetUI(btn) {
                 const alert = document.getElementById(msgId);
                 if (alert) alert.remove();
@@ -288,7 +309,6 @@ add_action('wp_footer', function () {
                     btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
                 }
             }
-
             document.addEventListener('change', (e) => {
                 if(e.target.name === 'fc_shipping_method' || e.target.name === 'shipping_method' || e.target.name.includes('country')) {
                     setTimeout(check, 150);
@@ -300,22 +320,19 @@ add_action('wp_footer', function () {
 <?php
 }, 999);
 
-// 5. Database Logging on Order
+// 5. Database Logging
 add_action('fluent_cart/order_created', function ($data) {
     global $wpdb;
     if (!isset($data['order'])) return;
     $order = $data['order'];
     $order_id = intval($order->id);
     $order_country = strtoupper(trim($order->billing_address['country'] ?? ''));
-    
     $allowed = (array)get_option('fc_allowed_countries', []);
     $excluded = (array)get_option('fc_excluded_countries', []);
-    $db_mode = get_option('fc_restriction_mode', 'global');
-    
+    $db_mode = get_option('fc_restriction_mode', '');
     $status = 'Passed';
     if (in_array($order_country, $excluded)) $status = 'Flagged: Excluded';
     elseif (!empty($allowed) && !in_array($order_country, $allowed)) $status = 'Flagged: Unauthorized';
-    
     $restrictions = json_encode([
         'order_country' => $order_country,
         'validation_status' => $status,
@@ -323,7 +340,6 @@ add_action('fluent_cart/order_created', function ($data) {
         'allowed_countries' => $allowed,
         'excluded_countries' => $excluded
     ]);
-
     $wpdb->insert($wpdb->prefix . 'fct_order_meta', [
         'order_id'   => $order_id,
         'meta_key'   => '_fc_shipping_restrictions',
