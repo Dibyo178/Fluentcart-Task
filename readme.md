@@ -79,7 +79,7 @@ The admin panel features a clean, professional layout including:
 
 ## 👨‍💻 Author
 
-**Sourov Purkayastha** Full Stack Developer  
+**Sourov Purkayastha**
 🌐 [sourovdev.space](https://sourovdev.space/)
 
 
