@@ -1,151 +1,156 @@
 <?php
 
 /**
- * Plugin Name: FluentCart Shipping Restriction
- * Description: Restrict shipping by country with a professional Vue.js UI and real-time validation.
- * Version: 1.0.0
+ * Plugin Name: FluentCart Shipping Restriction Pro
+ * Description: Restrict shipping by country/method with professional Vue.js UI, dynamic method selection, and real-time logging.
+ * Version: 3.6.2
  * Author: Sourov Purkayastha
- * Author URI: https://sourovdev.space/
  */
 
 if (!defined('ABSPATH')) exit;
 
 // 1. Setup Admin Menu
 add_action('admin_menu', function () {
-    add_menu_page(
-        'Shipping Rules',
-        'FC Shipping',
-        'manage_options',
-        'fc-shipping-restrictions',
-        'fc_render_admin_page',
-        'dashicons-admin-site',
-        56
-    );
+    add_menu_page('Shipping Rules', 'FC Shipping', 'manage_options', 'fc-shipping-restrictions', 'fc_render_admin_page', 'dashicons-admin-site', 56);
 });
 
-// 2. Data Persistence via AJAX (MySQL Storage)
+// 2. Data Persistence via AJAX
 add_action('wp_ajax_fc_save_shipping_settings', function () {
     check_ajax_referer('fc_shipping_nonce', 'nonce');
-
-    if (isset($_POST['allowed'])) {
-        update_option('fc_allowed_countries', json_decode(stripslashes($_POST['allowed']), true));
-    }
-
-    if (isset($_POST['excluded'])) {
-        update_option('fc_excluded_countries', json_decode(stripslashes($_POST['excluded']), true));
-    }
-
-    wp_send_json_success();
+    if (isset($_POST['allowed'])) update_option('fc_allowed_countries', json_decode(stripslashes($_POST['allowed']), true));
+    if (isset($_POST['excluded'])) update_option('fc_excluded_countries', json_decode(stripslashes($_POST['excluded']), true));
+    if (isset($_POST['mode'])) update_option('fc_restriction_mode', sanitize_text_field($_POST['mode']));
+    wp_send_json_success(['message' => 'Settings Updated']);
 });
 
-// 3. Admin UI 
-function fc_render_admin_page()
-{
+// 3. Admin UI Rendering
+function fc_render_admin_page() {
+    global $wpdb;
+    
+    $shipping_methods = $wpdb->get_results("SELECT id, title FROM {$wpdb->prefix}fct_shipping_methods");
+    $allowed = get_option('fc_allowed_countries', []);
+    $excluded = get_option('fc_excluded_countries', []);
+    $current_mode = get_option('fc_restriction_mode', 'global');
+    
+    $table_name = $wpdb->prefix . 'fct_order_meta';
+    $logs = $wpdb->get_results("SELECT order_id, meta_value, created_at FROM $table_name WHERE meta_key = '_fc_shipping_restrictions' ORDER BY created_at DESC LIMIT 15");
 ?>
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
     <div id="fcApp" class="min-h-screen bg-slate-50 p-6 md:p-12" v-cloak>
-        <div class="max-w-5xl mx-auto">
-            <div class="flex items-center justify-between mb-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-200">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-center justify-between mb-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-200 gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="p-3 rounded-xl shadow-lg shadow-indigo-200">
-                        <img class="w-12 h-12 object-contain" src="https://i.ibb.co.com/W4cgwDRJ/download.png" alt="Shipping Icon">
+                    <div class="p-3 bg-indigo-50 rounded-xl shadow-lg shadow-indigo-100">
+                        <img class="w-10 h-10 object-contain" src="https://i.ibb.co.com/W4cgwDRJ/download.png" alt="Icon">
                     </div>
                     <div>
-                        <h1 class="text-2xl font-black text-slate-800 leading-none">Shipping Zone Setup</h1>
-                        <p class="text-slate-500 mt-1 font-medium">Manage global and excluded shipping destinations</p>
+                        <h1 class="text-2xl font-black text-slate-800">Shipping Zone Setup</h1>
+                        <div class="flex items-center gap-3 mt-2">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">System Mode:</span>
+                            <select v-model="mode" 
+                                class="text-xs font-black bg-slate-100 border-none rounded-lg px-3 py-1.5 outline-none text-indigo-600 uppercase cursor-pointer hover:bg-slate-200 transition-all">
+                                <option value="global">GLOBAL</option>
+                                <option v-for="method in shippingMethods" :key="method.id" :value="String(method.id)">
+                                    PER METHOD: {{ method.title.toUpperCase() }}
+                                </option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <button @click="save" :disabled="saving" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold transition-all transform active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-100">
-                    <svg v-if="!saving" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-                    </svg>
-                    <span>{{ saving ? 'Processing...' : 'Save Details' }}</span>
+                <button @click="saveSettings()" :disabled="saving" class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3 rounded-xl font-bold transition-all shadow-lg disabled:opacity-50">
+                    {{ saving ? 'Process...' : 'Save Configuration' }}
                 </button>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-8">
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-emerald-50 border-b border-emerald-100 p-5 flex items-center gap-3">
-                        <div class="bg-emerald-500 p-2 rounded-lg">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
-                        <h2 class="font-extrabold text-emerald-900 uppercase tracking-wider text-sm">Allowed Countries</h2>
-                    </div>
+                    <div class="bg-emerald-50 border-b border-emerald-100 p-5 font-extrabold text-emerald-900 text-sm uppercase">✓ Allowed Countries</div>
                     <div class="p-6">
                         <div class="relative mb-6">
-                            <input v-model="newAllowed" @keyup.enter="add('allowed')" placeholder="Enter ISO (e.g. BD, US)" class="w-full pl-4 pr-12 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-400 focus:bg-white outline-none transition-all font-bold text-slate-700 uppercase">
-                            <button @click="add('allowed')" class="absolute right-3 top-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 p-2 rounded-xl transition-colors">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                            </button>
+                            <input v-model="newAllowed" @keyup.enter="add('allowed')" placeholder="ADD ISO (e.g. US)" class="w-full pl-4 pr-12 py-3 bg-slate-50 border-2 rounded-2xl outline-none font-bold uppercase">
+                            <button @click="add('allowed')" class="absolute right-3 top-2 bg-emerald-500 p-2 rounded-lg text-white">+</button>
                         </div>
-                        <div class="flex flex-wrap gap-2 min-h-[100px] content-start">
-                            <div v-for="(c, i) in allowed" :key="i" class="group flex items-center gap-2 bg-slate-100 hover:bg-emerald-500 hover:text-white px-4 py-2 rounded-xl border border-slate-200 transition-all">
-                                <span class="font-black">{{c}}</span>
-                                <button @click="remove('allowed', i)" class="text-slate-400 group-hover:text-emerald-100">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
-                                    </svg>
-                                </button>
+                        <div class="flex flex-wrap gap-2">
+                            <div v-for="(c, i) in allowed" :key="i" class="flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-slate-200 font-bold text-xs uppercase shadow-sm">
+                                <span>{{c}}</span>
+                                <button @click="remove('allowed', i)" class="text-rose-500">×</button>
                             </div>
-                            <p v-if="allowed.length === 0" class="text-slate-400 text-center w-full mt-4 italic">No specific allowed list (Global Access)</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-rose-50 border-b border-rose-100 p-5 flex items-center gap-3">
-                        <div class="bg-rose-500 p-2 rounded-lg">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </div>
-                        <h2 class="font-extrabold text-rose-900 uppercase tracking-wider text-sm">Excluded Countries</h2>
-                    </div>
+                    <div class="bg-rose-50 border-b border-rose-100 p-5 font-extrabold text-rose-900 text-sm uppercase">✕ Excluded Countries</div>
                     <div class="p-6">
                         <div class="relative mb-6">
-                            <input v-model="newExcluded" @keyup.enter="add('excluded')" placeholder="Enter ISO (e.g. FR, UK)" class="w-full pl-4 pr-12 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-rose-400 focus:bg-white outline-none transition-all font-bold text-slate-700 uppercase">
-                            <button @click="add('excluded')" class="absolute right-3 top-3 bg-rose-100 hover:bg-rose-200 text-rose-700 p-2 rounded-xl transition-colors">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                            </button>
+                            <input v-model="newExcluded" @keyup.enter="add('excluded')" placeholder="ADD ISO (e.g. CA)" class="w-full pl-4 pr-12 py-3 bg-slate-50 border-2 rounded-2xl outline-none font-bold uppercase">
+                            <button @click="add('excluded')" class="absolute right-3 top-2 bg-rose-500 p-2 rounded-lg text-white">+</button>
                         </div>
-                        <div class="flex flex-wrap gap-2 min-h-[100px] content-start">
-                            <div v-for="(c, i) in excluded" :key="i" class="group flex items-center gap-2 bg-slate-100 hover:bg-rose-500 hover:text-white px-4 py-2 rounded-xl border border-slate-200 transition-all">
-                                <span class="font-black">{{c}}</span>
-                                <button @click="remove('excluded', i)" class="text-slate-400 group-hover:text-rose-100">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
-                                    </svg>
-                                </button>
+                        <div class="flex flex-wrap gap-2">
+                            <div v-for="(c, i) in excluded" :key="i" class="flex items-center gap-2 bg-white px-3 py-1 rounded-lg border border-slate-200 font-bold text-xs uppercase shadow-sm">
+                                <span>{{c}}</span>
+                                <button @click="remove('excluded', i)" class="text-rose-500">×</button>
                             </div>
-                            <p v-if="excluded.length === 0" class="text-slate-400 text-center w-full mt-4 italic">No exclusions set</p>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-slate-800">Applied Restriction Logs</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-slate-400 text-[10px] uppercase font-black">
+                            <tr>
+                                <th class="p-5">Order</th>
+                                <th class="p-5">Country</th>
+                                <th class="p-5">Allowed Rules</th>
+                                <th class="p-5">Excluded Rules</th>
+                                <th class="p-5">Status</th>
+                                <th class="p-5">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <?php if ($logs): foreach ($logs as $log) : 
+                                $meta = json_decode($log->meta_value, true);
+                            ?>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="p-5 font-bold text-indigo-600">#<?php echo esc_html($log->order_id); ?></td>
+                                    <td class="p-5"><span class="bg-slate-900 text-white px-2 py-1 rounded text-[10px] font-bold"><?php echo esc_html($meta['order_country'] ?? 'N/A'); ?></span></td>
+                                    <td class="p-5 text-[9px] font-bold text-emerald-600"><?php echo implode(', ', (array)($meta['allowed_countries'] ?? [])); ?></td>
+                                    <td class="p-5 text-[9px] font-bold text-rose-600"><?php echo implode(', ', (array)($meta['excluded_countries'] ?? [])); ?></td>
+                                    <td class="p-5 text-[10px] font-black uppercase">
+                                        <span class="<?php echo (strpos($meta['validation_status'] ?? '', 'Passed') !== false) ? 'text-emerald-500' : 'text-rose-500'; ?>">
+                                            ● <?php echo esc_html($meta['validation_status'] ?? 'N/A'); ?>
+                                        </span>
+                                    </td>
+                                    <td class="p-5 text-slate-300 text-xs"><?php echo esc_html($log->created_at); ?></td>
+                                </tr>
+                            <?php endforeach; else: ?>
+                                <tr><td colspan="6" class="p-10 text-center text-slate-400 font-bold">No history available.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const {
-            createApp
-        } = Vue;
+        const { createApp } = Vue;
         createApp({
             data() {
                 return {
-                    allowed: <?php echo json_encode(get_option('fc_allowed_countries', [])); ?>,
-                    excluded: <?php echo json_encode(get_option('fc_excluded_countries', [])); ?>,
+                    allowed: <?php echo json_encode($allowed); ?>,
+                    excluded: <?php echo json_encode($excluded); ?>,
+                    mode: "<?php echo esc_attr($current_mode); ?>",
+                    shippingMethods: <?php echo json_encode($shipping_methods); ?>,
                     newAllowed: '',
                     newExcluded: '',
                     saving: false
@@ -153,209 +158,177 @@ function fc_render_admin_page()
             },
             methods: {
                 add(type) {
-                    let f = type === 'allowed' ? 'newAllowed' : 'newExcluded';
-                    let val = this[f].toUpperCase().trim();
-                    if (val && !this[type].includes(val)) {
-                        this[type].push(val);
-                        this[f] = '';
+                    let field = type === 'allowed' ? 'newAllowed' : 'newExcluded';
+                    let val = this[field].toUpperCase().trim();
+                    if (!val) return;
+                    if (this[type].includes(val)) {
+                        Swal.fire({ icon: 'info', title: 'Already Added', text: `${val} is already in the list.` });
+                        this[field] = ''; return;
                     }
+                    let otherType = type === 'allowed' ? 'excluded' : 'allowed';
+                    if (this[otherType].includes(val)) {
+                        Swal.fire({ icon: 'warning', title: 'Conflict Detected', text: `You cannot add ${val} because it is already in the ${otherType} list.` });
+                        this[field] = ''; return;
+                    }
+                    this[type].push(val);
+                    this[field] = '';
                 },
-                remove(type, i) {
-                    this[type].splice(i, 1);
-                },
-                async save() {
+                remove(type, i) { this[type].splice(i, 1); },
+                async saveSettings() {
                     this.saving = true;
                     const data = new FormData();
                     data.append('action', 'fc_save_shipping_settings');
                     data.append('nonce', "<?php echo wp_create_nonce('fc_shipping_nonce'); ?>");
                     data.append('allowed', JSON.stringify(this.allowed));
                     data.append('excluded', JSON.stringify(this.excluded));
+                    data.append('mode', this.mode);
                     try {
-                        await axios.post(ajaxurl, data);
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Details Updated!',
-                            text: 'Your shipping rules have been saved successfully.',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    } catch (e) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error!',
-                            text: 'There was an error saving your details.'
-                        });
-                    }
+                        const res = await axios.post(ajaxurl, data);
+                        if (res.data.success) {
+                            Swal.fire({ icon: 'success', title: 'Saved!', showConfirmButton: false, timer: 1000 })
+                            .then(() => { window.location.reload(); });
+                        }
+                    } catch (e) { Swal.fire('Error', 'Failed to save', 'error'); }
                     this.saving = false;
                 }
-
             }
         }).mount('#fcApp');
     </script>
-    <style>
-        [v-cloak] {
-            display: none;
-        }
-
-        #adminmenuwrap {
-            z-index: 999;
-        }
-    </style>
 <?php
 }
 
-// 4. Frontend Real-time Validation
-add_action('wp_footer', function() {
+// 4. Frontend Logic
+add_action('wp_footer', function () {
     $allowed = (array)get_option('fc_allowed_countries', []);
     $excluded = (array)get_option('fc_excluded_countries', []);
-    ?>
+    $systemMode = get_option('fc_restriction_mode', 'global');
+    
+    if ($systemMode !== 'global' && is_numeric($systemMode)) {
+        echo "<style>
+            .fct_shipping_methods_item { display: none !important; }
+            .fct_shipping_methods_item:has(input[value='{$systemMode}']),
+            .fct_shipping_methods_item:has(#shipping_method_{$systemMode}) { 
+                display: block !important; 
+            }
+        </style>";
+    }
+?>
     <script type="text/javascript">
-    (function() {
-        const normAllowed = <?php echo json_encode(array_map('strtoupper', array_map('trim', $allowed))); ?>;
-        const normExcluded = <?php echo json_encode(array_map('strtoupper', array_map('trim', $excluded))); ?>;
-        const msgId = 'fc-restriction-alert';
+        (function() {
+            const normAllowed = <?php echo json_encode($allowed); ?>;
+            const normExcluded = <?php echo json_encode($excluded); ?>;
+            const systemMode = "<?php echo esc_attr($systemMode); ?>";
+            const msgId = 'fc-restriction-alert';
 
-        function updateCheckoutState() {
-            const countryEl = document.querySelector('select[name*="country"], #billing_country, [name="shipping_country"]');
-            const btn = document.querySelector('.fct-checkout-submit, .fc_place_order, .fct_btn_primary, button[type="submit"], #fct_order_submit, #place_order');
-            if (!countryEl || !btn) return false;
+            function check() {
+                const countryEl = document.querySelector('select[name*="country"], #billing_country, [name="shipping_country"], .fc_country_select');
+                const btn = document.querySelector('.fct-checkout-submit, .fc_place_order, button[type="submit"], #place_order');
+                
+                const selectedInput = document.querySelector('input[name="fc_shipping_method"]:checked') || 
+                                     document.querySelector('input[name="shipping_method"]:checked') ||
+                                     document.querySelector('input[name="fc_selected_shipping_method"]');
+                
+                if (!countryEl || !btn) return;
 
-            const country = (countryEl.value || "").toUpperCase().trim();
+                const activeMethodId = selectedInput ? String(selectedInput.value) : null;
+                const restrictedMode = String(systemMode);
 
-            let isBlocked = false;
-            let msg = "";
-            let bgColor = '';
-            let textColor = '#fff';
+                // AUTO-SELECT LOGIC: If a specific method is set, force select it
+                if (restrictedMode !== 'global') {
+                    const targetRadio = document.querySelector(`input[name="fc_shipping_method"][value="${restrictedMode}"], input[name="shipping_method"][value="${restrictedMode}"]`);
+                    
+                    if (targetRadio && !targetRadio.checked) {
+                        targetRadio.checked = true;
+                        targetRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
 
-            // Logic: Excluded > Allowed list > Not listed
-            if (normExcluded.includes(country)) {
-                isBlocked = true;
-                msg = "🚫 We do not ship to this country.";
-                bgColor = '#be123c'; // red
-            } else if (normAllowed.length > 0 && !normAllowed.includes(country)) {
-                isBlocked = true;
-                msg = "⚠️ This country is not allowed for shipping.";
-                bgColor = '#000'; // black
-            } else {
-                isBlocked = false; // allowed countries: no message
-            }
-
-            // Remove existing message if any
-            let existingMsg = document.getElementById(msgId);
-            if (isBlocked) {
-                if (!existingMsg) {
-                    existingMsg = document.createElement('div');
-                    existingMsg.id = msgId;
-                    btn.parentNode.insertBefore(existingMsg, btn);
+                    if (activeMethodId !== restrictedMode) {
+                        resetUI(btn); 
+                        return; 
+                    }
                 }
-                existingMsg.innerText = msg;
-                existingMsg.style.cssText = `
-                    background:${bgColor};
-                    color:${textColor};
-                    padding:15px;
-                    margin:10px 0;
-                    border-radius:8px;
-                    text-align:center;
-                    font-weight:bold;
-                    font-size:16px;
-                    width:100%;
-                    display:block;
-                    clear:both;
-                `;
-                btn.disabled = true;
-                btn.style.opacity = '0.4';
-                btn.style.pointerEvents = 'none';
-                btn.style.cursor = 'not-allowed';
-            } else {
-                if (existingMsg) existingMsg.remove();
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
-                btn.style.cursor = 'pointer';
+
+                const country = (countryEl.value || "").toUpperCase().trim();
+                let isBlocked = false;
+                let msg = "";
+                let bgColor = "";
+
+                if (normExcluded.includes(country)) {
+                    isBlocked = true;
+                    msg = "🚫 We do not ship to this country.";
+                    bgColor = "#78350f";
+                } else if (normAllowed.length > 0 && !normAllowed.includes(country)) {
+                    isBlocked = true;
+                    msg = "⚠️ This country is not allowed for shipping.";
+                    bgColor = "#000000";
+                }
+
+                if (isBlocked) {
+                    let alert = document.getElementById(msgId);
+                    if (!alert) {
+                        alert = document.createElement('div');
+                        alert.id = msgId;
+                        btn.parentNode.insertBefore(alert, btn);
+                    }
+                    alert.innerText = msg;
+                    alert.style.cssText = `background:${bgColor}; color:#ffffff; padding:12px; margin:10px 0; border-radius:10px; text-align:center; font-weight:bold; font-size:14px;`;
+                    
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.pointerEvents = 'none';
+                } else {
+                    resetUI(btn);
+                }
             }
 
-            return true;
-        }
-
-        // POLLING until checkout fields exist
-        const intervalId = setInterval(() => {
-            if (updateCheckoutState()) clearInterval(intervalId);
-        }, 300);
-
-        document.addEventListener('change', function(e) {
-            if (e.target.matches('select[name*="country"], #billing_country, [name="shipping_country"]')) {
-                updateCheckoutState();
+            function resetUI(btn) {
+                const alert = document.getElementById(msgId);
+                if (alert) alert.remove();
+                if (btn) {
+                    btn.disabled = false; btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+                }
             }
-        });
 
-    })();
+            document.addEventListener('change', (e) => {
+                if(e.target.name === 'fc_shipping_method' || e.target.name === 'shipping_method' || e.target.name.includes('country')) {
+                    setTimeout(check, 150);
+                }
+            });
+            setInterval(check, 1000); 
+        })();
     </script>
-    <?php
+<?php
 }, 999);
 
-
-// 5. Save Restriction Info to Order Meta
-add_action('fluent_cart/order_created', function($data) {
+// 5. Database Logging on Order
+add_action('fluent_cart/order_created', function ($data) {
     global $wpdb;
-    
-    if (!isset($data['order'])) {
-        error_log('FluentCart Shipping Restriction: No order in data on order_created hook.');
-        return;
-    }
-    
+    if (!isset($data['order'])) return;
     $order = $data['order'];
-    $order_id = isset($order->id) ? intval($order->id) : 0;
+    $order_id = intval($order->id);
     $order_country = strtoupper(trim($order->billing_address['country'] ?? ''));
     
-    if ($order_id === 0) {
-        error_log('FluentCart Shipping Restriction: Invalid order ID on order_created hook.');
-        return;
-    }
-    
-    // Get plugin settings
     $allowed = (array)get_option('fc_allowed_countries', []);
     $excluded = (array)get_option('fc_excluded_countries', []);
+    $db_mode = get_option('fc_restriction_mode', 'global');
     
     $status = 'Passed';
-    if (in_array($order_country, $excluded)) {
-        $status = 'Flagged: Excluded Country';
-    } elseif (!empty($allowed) && !in_array($order_country, $allowed)) {
-        $status = 'Flagged: Not in Allowed List';
-    }
-
-    // Define the custom FluentCart meta table
-    $table_name = $wpdb->prefix . 'fct_order_meta';
-
-    // Insert Validation Status
-    $wpdb->insert($table_name, [
-        'order_id'   => $order_id,
-        'meta_key'   => '_fc_shipping_validation',
-        'meta_value' => $status,
-        'created_at' => current_time('mysql'),
-        'updated_at' => current_time('mysql')
-    ]);
-
-    // Insert Processing Time
-    $wpdb->insert($table_name, [
-        'order_id'   => $order_id,
-        'meta_key'   => '_fc_processed_at',
-        'meta_value' => current_time('mysql'),
-        'created_at' => current_time('mysql'),
-        'updated_at' => current_time('mysql')
-    ]);
-
-    // Store allowed/excluded country info as JSON for reports/exports
+    if (in_array($order_country, $excluded)) $status = 'Flagged: Excluded';
+    elseif (!empty($allowed) && !in_array($order_country, $allowed)) $status = 'Flagged: Unauthorized';
+    
     $restrictions = json_encode([
-        'allowed_countries' => $allowed,
-        'excluded_countries' => $excluded,
         'order_country' => $order_country,
-        'validation_status' => $status
+        'validation_status' => $status,
+        'applied_method_name' => is_numeric($db_mode) ? 'Method ID: '.$db_mode : strtoupper($db_mode),
+        'allowed_countries' => $allowed,
+        'excluded_countries' => $excluded
     ]);
-    $wpdb->insert($table_name, [
+
+    $wpdb->insert($wpdb->prefix . 'fct_order_meta', [
         'order_id'   => $order_id,
         'meta_key'   => '_fc_shipping_restrictions',
         'meta_value' => $restrictions,
         'created_at' => current_time('mysql'),
         'updated_at' => current_time('mysql')
     ]);
-}, 10, 1);
+}, 20, 1);
