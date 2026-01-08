@@ -50,7 +50,7 @@ function fc_render_admin_page() {
                     <div>
                         <h1 class="text-2xl font-black text-slate-800">Shipping Zone Setup</h1>
                         <div class="flex items-center gap-3 mt-2">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">System Mode:</span>
+                             <span class="text-[12px] font-bold text-slate-400 uppercase">Select Method:</span>
                             <select v-model="mode" 
                                 class="text-xs font-black bg-slate-100 border-none rounded-lg px-3 py-1.5 outline-none text-indigo-600 uppercase cursor-pointer hover:bg-slate-200 transition-all">
                                 <option value="global">GLOBAL</option>
