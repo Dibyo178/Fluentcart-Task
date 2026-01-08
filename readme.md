@@ -2,7 +2,7 @@
 
 # FluentCart Shipping Restriction
 
-**FluentCart Shipping Restriction** is a powerful WordPress plugin that gives store owners granular control over shipping destinations. Built with a modern **Vue.js 3** and **Tailwind CSS** admin interface, it offers real-time checkout validation to prevent unauthorized orders from restricted regions.
+**FluentCart Shipping Restriction** is a powerful WordPress plugin that gives store owners control over shipping destinations. Built with a modern **Vue.js 3** and **Tailwind CSS** admin interface, it offers real-time checkout validation to prevent unauthorized orders from restricted regions.
 
 ---
 
