@@ -9,7 +9,8 @@
 ## 🔗 Project Resources
 
 - 🌐 **Live Demo:** [fluentcart.sourovdev.space](https://fluentcart.sourovdev.space/)
-- 👨‍💻 **Developer Portfolio:** [sourovdev.space](https://sourovdev.space/)
+-  **Full Project zip:** [project-zip](https://drive.google.com/file/d/1xbY29Swh8Upv5UUhr7Htxzw6EmQyiZPH/view?usp=sharing)
+-  **Sql File:** [sql](https://drive.google.com/file/d/1MODQeXnEVUW_aQgRoDcaAREL5PDj_1E3/view?usp=sharing)
 - 📦 **Tech Stack:** PHP, MySQL, Vue.js 3, Tailwind CSS, Axios, FluentCart Hooks.
 
 ---
