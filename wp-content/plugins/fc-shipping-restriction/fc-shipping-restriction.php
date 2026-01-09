@@ -173,17 +173,41 @@ function fc_render_admin_page() {
                 }
             },
             methods: {
-                add(type) {
-                    let field = type === 'allowed' ? 'newAllowed' : 'newExcluded';
-                    let val = this[field].toUpperCase().trim();
-                    if (!val) return;
-                    if (this[type].includes(val)) {
-                        Swal.fire({ icon: 'info', title: 'Already Added', text: `${val} is already in the list.` });
-                        this[field] = ''; return;
-                    }
-                    this[type].push(val);
-                    this[field] = '';
-                },
+            ods: {
+               add(type) {
+    let field = type === 'allowed' ? 'newAllowed' : 'newExcluded';
+    let oppositeType = type === 'allowed' ? 'excluded' : 'allowed';
+    let oppositeLabel = type === 'allowed' ? 'Excluded List' : 'Allowed List';
+    
+    let val = this[field].toUpperCase().trim();
+    if (!val) return;
+
+    // sweetalert show already have into nthis list 
+    if (this[type].includes(val)) {
+        Swal.fire({ 
+            icon: 'info', 
+            title: 'Already Added', 
+            text: `${val} is already in this list.` 
+        });
+        this[field] = ''; 
+        return;
+    }
+
+    //  check the (Allowed/Excluded) 
+    if (this[oppositeType].includes(val)) {
+        Swal.fire({ 
+            icon: 'warning', 
+            title: 'Conflict Detected', 
+            text: `${val} is already defined in the ${oppositeLabel}. You cannot add it to both.` 
+        });
+        this[field] = ''; 
+        return;
+    }
+
+    // if this logic is ok sum all of
+    this[type].push(val);
+    this[field] = '';
+},
                 remove(type, i) { this[type].splice(i, 1); },
                 async saveSettings() {
                     this.saving = true;
