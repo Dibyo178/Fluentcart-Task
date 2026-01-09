@@ -173,7 +173,6 @@ function fc_render_admin_page() {
                 }
             },
             methods: {
-            ods: {
                add(type) {
     let field = type === 'allowed' ? 'newAllowed' : 'newExcluded';
     let oppositeType = type === 'allowed' ? 'excluded' : 'allowed';
